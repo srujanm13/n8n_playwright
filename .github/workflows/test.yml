@@ -1,0 +1,44 @@
+name: Playwright tests (Docker)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  run-playwright-in-docker:
+    name: Run Playwright tests in Docker
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:focal
+      options: --user root
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js (optional, ensures correct npm client)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          # Install Playwright browsers and dependencies inside the container
+          npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        env:
+          CI: true
+        run: |
+          # Run Playwright tests. Adjust command if you use a different test script.
+          npx playwright test --reporter=github
+
+      - name: Upload Playwright report (artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
