@@ -8,7 +8,7 @@ export default defineConfig({
   reporter: process.env.GITHUB_ACTIONS ? [['github']] : [['html', { open: 'never' }], ['list']],
   use: {
     actionTimeout: 0,
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || 'https://rahulshettyacademy.com/client/#/auth/register',
     headless: true,
     viewport: { width: 1280, height: 720 },
     ignoreHTTPSErrors: true,
