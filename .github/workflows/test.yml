@@ -18,7 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js (optional, ensures correct npm client)
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -26,19 +26,23 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          # Install Playwright browsers and dependencies inside the container
-          npx playwright install --with-deps
 
-      - name: Run Playwright tests
+      - name: Run Playwright tests (CI script)
         env:
           CI: true
         run: |
-          # Run Playwright tests. Adjust command if you use a different test script.
-          npx playwright test --reporter=github
+          npm run test:ci
 
-      - name: Upload Playwright report (artifact)
+      - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report
+
+      - name: Upload Playwright test-results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results
