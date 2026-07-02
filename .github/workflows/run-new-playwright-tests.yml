@@ -1,0 +1,60 @@
+name: Run only newly added Playwright tests
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  run-new-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps
+
+      - name: Determine newly added test files
+        id: new_tests
+        run: |
+          set -euo pipefail
+          echo "Changed files between ${{ github.event.before }} and ${{ github.sha }}"
+          # Ensure we have full history
+          git fetch --no-tags --prune --unshallow || true
+
+          # List added files (status A) in the push
+          added_files=$(git diff --name-status ${{ github.event.before }} ${{ github.sha }} | awk '$1=="A" {print $2}')
+          echo "Added files:\n$added_files"
+
+          tests_to_run=""
+          for f in $added_files; do
+            case "$f" in
+              tests/*.spec.*|tests/**/*.spec.*)
+                tests_to_run="$tests_to_run $f"
+                ;;
+            esac
+          done
+
+          # Normalize whitespace
+          tests_to_run=$(echo $tests_to_run | xargs || true)
+          echo "tests=$tests_to_run" >> $GITHUB_OUTPUT
+
+      - name: Run new Playwright tests
+        if: steps.new_tests.outputs.tests != ''
+        run: |
+          echo "Running newly added tests: ${{ steps.new_tests.outputs.tests }}"
+          npx playwright test ${{ steps.new_tests.outputs.tests }}
+
+      - name: No new tests found
+        if: steps.new_tests.outputs.tests == ''
+        run: echo "No newly added tests found in this push."
