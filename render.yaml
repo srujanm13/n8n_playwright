@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: playwright-mcp-server
+    env: docker
+    plan: starter # Playwright requires at least 2GB RAM to execute properly
+    region: oregon
+    numInstances: 1
+    healthCheckPath: /
