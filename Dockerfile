@@ -19,4 +19,6 @@ EXPOSE 8931
 
 # Run the Playwright MCP server with appropriate cloud execution flags
 ENTRYPOINT ["bash","-lc"]
-CMD ["npx @playwright/mcp@latest --port 8931 --isolated --no-sandbox --ignore-https-errors --headless"]
+# Ensure the host flag is explicitly set to 0.0.0.0
+CMD ["npx @playwright/mcp@latest --host 0.0.0.0 --port 8931 --isolated --no-sandbox --ignore-https-errors --headless"]
+
